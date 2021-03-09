@@ -48,7 +48,7 @@ public abstract class BaseTest {
             RequestSpecification requestSpecification = given()
                 .baseUri("http://localhost").port(getSpringBootPort())
                 .log().all();
-
+            logResponse();
             if (logResponse) {
                 requestSpecification = requestSpecification.filter(new ResponseLoggingFilter());
             }
