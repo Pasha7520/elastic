@@ -2,6 +2,7 @@ package com.griddynamics.esgraduationproject.common;
 
 import com.griddynamics.esgraduationproject.service.TypeaheadService;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ public class ExercisesIntegrationTest extends BaseTest {
     @Before
     public void init() throws InterruptedException {
         typeaheadService.recreateIndex();
-        Thread.sleep(1100); // TASK 6: Why if we change 1100 to 500, then some tests fail? How to fix it, so that all tests pass with 500?
+        Thread.sleep(500); // TASK 6: Why if we change 1100 to 500, then some tests fail? How to fix it, so that all tests pass with 500?
     }
 
     // TASK 1: Fix 2 bugs in config and recreation/filling of the index.
@@ -104,7 +105,7 @@ public class ExercisesIntegrationTest extends BaseTest {
     // TASK 5: Add a new parameter "considerItemCountInSorting" to the request that change sorting (when it's true)
     // from: _score DESC, rank DESC, _id DESC
     // to: _score DESC, itemCount DESC, _id DESC
-    @Ignore
+
     @Test
     public void testSortingByItemCountWorks() {
 

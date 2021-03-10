@@ -117,10 +117,7 @@ public class TypeaheadRepositoryImpl implements TypeaheadRepository {
         // Add sorting and aggregation if necessary
         if (!request.isGetAllRequest()) {
             // Sorting
-            ssb.sort(new ScoreSortBuilder().order(SortOrder.DESC)); // sort by _score DESC
-            ssb.sort(new FieldSortBuilder(RANK_FIELD).order(SortOrder.DESC)); // sort by rank DESC
-            ssb.sort(new FieldSortBuilder(ID_FIELD).order(SortOrder.DESC)); // tie breaker: sort by _id DESC
-
+            addSortParametrs(request, ssb);
             // Aggregation
             List<AggregationBuilder> aggs = createAggs();
             aggs.forEach(ssb::aggregation);
@@ -128,6 +125,7 @@ public class TypeaheadRepositoryImpl implements TypeaheadRepository {
 
         // Search in ES
         SearchRequest searchRequest = new SearchRequest(indexName).source(ssb);
+
         try {
             SearchResponse searchResponse = esClient.search(searchRequest, RequestOptions.DEFAULT);
             // Build service response
@@ -135,6 +133,20 @@ public class TypeaheadRepositoryImpl implements TypeaheadRepository {
         } catch (IOException ex) {
             log.error(ex.getMessage(), ex);
             return new TypeaheadServiceResponse();
+        }
+    }
+
+    private void addSortParametrs(TypeaheadServiceRequest request, SearchSourceBuilder ssb) {
+        if (request.isConsiderItemCountInSorting()) {
+            ssb.sort(new ScoreSortBuilder().order(SortOrder.DESC)); // sort by _score DESC
+            ssb.sort(new FieldSortBuilder(ITEM_COUNT_FIELD).order(SortOrder.DESC)); // sort by rank DESC
+            ssb.sort(new FieldSortBuilder(ID_FIELD).order(SortOrder.DESC)); // tie breaker: sort by _id DESC
+
+
+        } else {
+            ssb.sort(new ScoreSortBuilder().order(SortOrder.DESC)); // sort by _score DESC
+            ssb.sort(new FieldSortBuilder(RANK_FIELD).order(SortOrder.DESC)); // sort by rank DESC
+            ssb.sort(new FieldSortBuilder(ID_FIELD).order(SortOrder.DESC)); // tie breaker: sort by _id DESC
         }
     }
 
@@ -328,12 +340,13 @@ public class TypeaheadRepositoryImpl implements TypeaheadRepository {
                     requestCnt++;
                     String line2 = br.readLine();
                     IndexRequest indexRequest = createIndexRequestFromBulkData(line1, line2);
+
                     if (indexRequest != null) {
                         bulkRequest.add(indexRequest);
                     }
                 }
             }
-
+            bulkRequest.setRefreshPolicy("wait_for");
             BulkResponse bulkResponse = esClient.bulk(bulkRequest, RequestOptions.DEFAULT);
             if (bulkResponse.getItems().length != requestCnt) {
                 log.warn("Only {} out of {} requests have been processed in a bulk request.", bulkResponse.getItems().length, requestCnt);

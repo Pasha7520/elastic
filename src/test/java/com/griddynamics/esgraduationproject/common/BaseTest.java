@@ -34,7 +34,7 @@ public abstract class BaseTest {
          * Use this method to log the response to debug tests
          */
         public APIClient logResponse() {
-            this.logResponse = true;
+            this.logResponse = false;
             return this;
         }
 

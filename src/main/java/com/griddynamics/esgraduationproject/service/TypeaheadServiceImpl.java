@@ -40,6 +40,6 @@ public class TypeaheadServiceImpl implements TypeaheadService {
 
     @Override
     public void recreateIndex() {
-        typeaheadRepository.recreateIndex();
+       typeaheadRepository.recreateIndex();
     }
 }
